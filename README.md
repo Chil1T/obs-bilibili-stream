@@ -1,6 +1,8 @@
-# OBS Bilibili 直播插件
+# OBS Bilibili 直播插件（二开）
 
-这是一个为 OBS Studio 开发的插件，用于简化在 Bilibili 平台上的直播流程。插件支持扫码登录 Bilibili，更新直播间信息，并获取 RTMP 推流地址和推流码。
+这是一个基于 [`Zarosmm/obs-bilibili-stream`](https://github.com/Zarosmm/obs-bilibili-stream) 的二开版本，用于简化在 Bilibili 平台上的 OBS 直播流程。
+
+插件支持扫码登录 Bilibili、更新直播间信息、开启/关闭直播，并在开启直播后自动把 Bilibili 返回的 RTMP 地址和推流码写入 OBS 直播设置。若自动写入失败，插件也会把 RTMP 地址和推流码分开显示，并提供单独复制按钮。
 
 **[English README](README_en.md)**
 
@@ -8,7 +10,16 @@
 
 ### Windows
 
-1.  **下载插件**：从 [Releases 页面](https://github.com/Zarosmm/obs-bilibili-stream/releases) 下载最新的 `bilibili-stream-for-obs-*-windows-x64.zip`。
+推荐使用 `.exe` 安装器：
+
+1.  **下载插件**：从 [Releases 页面](https://github.com/Chil1T/obs-bilibili-stream/releases) 下载最新的 `bilibili-stream-for-obs-*-windows-x64-installer.exe`。
+2.  **关闭 OBS**：安装前退出 OBS Studio。
+3.  **运行安装器**：双击 `.exe`，按提示安装。插件会安装到 `C:\ProgramData\obs-studio\plugins`。
+4.  **启动 OBS**：重新启动 OBS Studio，插件将自动加载。
+
+也可以手动安装 `.zip`：
+
+1.  **下载插件**：从 [Releases 页面](https://github.com/Chil1T/obs-bilibili-stream/releases) 下载最新的 `bilibili-stream-for-obs-*-windows-x64.zip`。
 2.  **解压文件**：将压缩包解压。
 3.  **放置目录**：将解压后的文件夹移动至以下路径：
     `C:\ProgramData\obs-studio\plugins`
@@ -67,12 +78,9 @@
 
 3. **开始直播**：
     - 导航到 **Bilibili直播** → **开始直播**。
-    - 弹出提示框将显示 **RTMP 地址** 和 **推流码**，复制这些信息。
-    - 在 OBS 中，打开 **设置** → **输出** → **流**，设置：
-        - 服务：自定义
-        - 服务器：粘贴 RTMP 地址（例如 `rtmp://live-push.bilivideo.com/live-bvc/`）
-        - 流密钥：粘贴推流码（例如 `?streamname=...`）
-    - 点击 OBS 界面右下角的 **开始直播** 按钮。
+    - 插件会尝试自动把 **RTMP 地址** 和 **推流码** 写入 OBS 的直播设置。
+    - 若自动写入成功，确认弹窗后点击 OBS 界面右下角的 **开始直播** 按钮。
+    - 若自动写入失败，弹窗会分开显示 RTMP 地址和推流码，可使用单独复制按钮手动填入 OBS。
 
 4. **结束直播**：
     - 在 OBS 界面右下角点击 **停止直播**。
@@ -90,9 +98,19 @@
 - OBS Studio 30.0 或更高版本
 - Windows / macOS / Ubuntu 22.04 或更高版本
 
+## 二开说明
+
+本仓库保留原项目 GPL 授权和上游归属。当前二开重点是：
+
+- 自动写入 OBS 自定义 RTMP 直播设置。
+- 优化推流信息弹窗，支持 RTMP 地址和推流码单独复制。
+- 为 Windows Release 增加自动安装器。
+
+详细计划见 [docs/fork-plan.md](docs/fork-plan.md)。
+
 ## 贡献
 
-欢迎提交问题或拉取请求至 [GitHub 仓库](https://github.com/Zarosmm/obs-bilibili-stream)。
+欢迎提交 issue 或 pull request。若改动涉及上游原始逻辑，请尽量保持补丁小而清晰，方便后续同步上游。
 
 ## Star History
 

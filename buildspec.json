@@ -37,9 +37,9 @@
         }
     },
     "name": "bilibili-stream-for-obs",
-    "displayName": "BILIBILI Stream for OBS",
-    "version": "2.1.0",
-    "author": "Zaros",
-    "website": "None",
-    "email": "kuzidiaolewc@outlook.com"
+    "displayName": "Bilibili Stream for OBS",
+    "version": "2.1.1",
+    "author": "Zaros and fork contributors",
+    "website": "https://github.com/Chil1T/obs-bilibili-stream",
+    "email": "Chil1T@users.noreply.github.com"
 }
