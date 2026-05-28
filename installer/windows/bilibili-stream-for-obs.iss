@@ -36,7 +36,6 @@ ArchitecturesInstallIn64BitMode=x64
 UninstallDisplayName=Bilibili Stream for OBS
 
 [Languages]
-Name: "chinesesimp"; MessagesFile: "compiler:Languages\ChineseSimplified.isl"
 Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Files]
