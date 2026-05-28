@@ -110,4 +110,9 @@ runs:
           Configuration = '${{ inputs.config }}'
         }
 
+        if ( '${{ inputs.package }}' -eq 'true' ) {
+          choco install innosetup --no-progress -y
+          $PackageArgs.Installer = $true
+        }
+
         .github/scripts/Package-Windows.ps1 @PackageArgs

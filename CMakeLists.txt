@@ -24,36 +24,35 @@ if(NOT GIT_COMMIT_HASH)
   set(GIT_COMMIT_HASH "unknown")
 endif()
 
-add_library(${CMAKE_PROJECT_NAME} MODULE
-        src/bilibili_api.hpp
-        src/http_client.hpp
-        src/plugin_utils.hpp
-        src/md5.hpp
-        src/qrcodegen/qrcodegen.hpp
-        src/json11/json11.hpp
-        src/core/config_manager.hpp
-        src/core/qr_generator.hpp
-        src/ui/menu_manager.hpp
-        src/ui/dialog_factory.hpp
-        src/plugin-main.cpp
-        src/bilibili_api.cpp
-        src/http_client.cpp
-        src/plugin_utils.cpp
-        src/md5.cpp
-        src/qrcodegen/qrcodegen.cpp
-        src/json11/json11.cpp
-        src/core/config_manager.cpp
-        src/core/qr_generator.cpp
-        src/ui/menu_manager.cpp
-        src/ui/dialog_factory.cpp
+add_library(
+  ${CMAKE_PROJECT_NAME}
+  MODULE
+  src/bilibili_api.hpp
+  src/http_client.hpp
+  src/plugin_utils.hpp
+  src/md5.hpp
+  src/qrcodegen/qrcodegen.hpp
+  src/json11/json11.hpp
+  src/core/config_manager.hpp
+  src/core/qr_generator.hpp
+  src/ui/menu_manager.hpp
+  src/ui/dialog_factory.hpp
+  src/plugin-main.cpp
+  src/bilibili_api.cpp
+  src/http_client.cpp
+  src/plugin_utils.cpp
+  src/md5.cpp
+  src/qrcodegen/qrcodegen.cpp
+  src/json11/json11.cpp
+  src/core/config_manager.cpp
+  src/core/qr_generator.cpp
+  src/ui/menu_manager.cpp
+  src/ui/dialog_factory.cpp
 )
 
 find_package(libobs REQUIRED)
 find_package(CURL REQUIRED)
-target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE
-        OBS::libobs
-        CURL::libcurl
-)
+target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE OBS::libobs CURL::libcurl)
 
 if(ENABLE_FRONTEND_API)
   find_package(obs-frontend-api REQUIRED)
@@ -75,14 +74,9 @@ endif()
 
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE src/plugin-main.cpp)
 
-target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE
-    "PLUGIN_VERSION_STR=\"${_version}\""
-    "GIT_COMMIT_HASH=\"${GIT_COMMIT_HASH}\""
+target_compile_definitions(
+  ${CMAKE_PROJECT_NAME}
+  PRIVATE "PLUGIN_VERSION_STR=\"${_version}\"" "GIT_COMMIT_HASH=\"${GIT_COMMIT_HASH}\""
 )
 
 set_target_properties_plugin(${CMAKE_PROJECT_NAME} PROPERTIES OUTPUT_NAME ${_name})
-
-# Install plugin and dependencies
-install(TARGETS ${CMAKE_PROJECT_NAME}
-        LIBRARY DESTINATION "${CMAKE_INSTALL_PREFIX}/obs-plugins/64bit"
-)

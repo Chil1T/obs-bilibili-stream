@@ -3,7 +3,8 @@ param(
     [ValidateSet('x64')]
     [string] $Target = 'x64',
     [ValidateSet('Debug', 'RelWithDebInfo', 'Release', 'MinSizeRel')]
-    [string] $Configuration = 'RelWithDebInfo'
+    [string] $Configuration = 'RelWithDebInfo',
+    [switch] $Installer
 )
 
 $ErrorActionPreference = 'Stop'
@@ -66,6 +67,29 @@ function Package {
         Verbose = ($Env:CI -ne $null)
     }
     Compress-Archive -Force @CompressArgs
+
+    if ( $Installer ) {
+        $InnoSetup = Get-Command iscc -ErrorAction SilentlyContinue
+        if ( $null -eq $InnoSetup ) {
+            throw "Inno Setup compiler 'iscc' was not found. Install Inno Setup or run without -Installer."
+        }
+
+        $InstallerScript = "${ProjectRoot}/installer/windows/${ProductName}.iss"
+        if ( ! ( Test-Path -LiteralPath $InstallerScript ) ) {
+            throw "Windows installer script not found: ${InstallerScript}"
+        }
+
+        Log-Group "Building Windows installer ${ProductName}..."
+        $InstallerOutputName = "${ProductName}-${ProductVersion}-windows-${Target}-installer"
+        Invoke-External iscc `
+            "/DAppName=${ProductName}" `
+            "/DAppVersion=${ProductVersion}" `
+            "/DProjectRoot=${ProjectRoot}" `
+            "/DBuildConfig=${Configuration}" `
+            "/DOutputDir=${ProjectRoot}/release" `
+            "/DOutputBaseName=${InstallerOutputName}" `
+            $InstallerScript
+    }
     Log-Group
 }
 

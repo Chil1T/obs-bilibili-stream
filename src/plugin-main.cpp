@@ -1,6 +1,7 @@
 #include <obs-data.h>
 #include <obs-module.h>
 #include <obs-frontend-api.h>
+#include <obs.h>
 #include <QMainWindow>
 #include <QDesktopServices>
 #include <QUrl>
@@ -29,13 +30,15 @@ private slots:
 private:
 	void updateLoginStatus();
 	void openLiveRoom();
+	bool configureObsStreamService(const std::string &rtmpAddr, const std::string &rtmpCode);
 
 	Core::ConfigManager m_config;
 	UI::MenuManager *m_menu;
 };
 
 BilibiliStreamPlugin::BilibiliStreamPlugin(QMainWindow *parent)
-	: QObject(nullptr), m_menu(new UI::MenuManager(parent->menuBar(), this))
+	: QObject(nullptr),
+	  m_menu(new UI::MenuManager(parent->menuBar(), this))
 {
 	m_config.load();
 
@@ -87,6 +90,33 @@ void BilibiliStreamPlugin::openLiveRoom()
 	if (!QDesktopServices::openUrl(QUrl(url))) {
 		UI::DialogFactory::message(QStringLiteral("无法打开浏览器，请手动访问：\n") + url, "消息");
 	}
+}
+
+bool BilibiliStreamPlugin::configureObsStreamService(const std::string &rtmpAddr, const std::string &rtmpCode)
+{
+	if (rtmpAddr.empty() || rtmpCode.empty()) {
+		obs_log(LOG_WARNING, "RTMP 地址或推流码为空，跳过 OBS 推流设置写入");
+		return false;
+	}
+
+	obs_data_t *settings = obs_data_create();
+	obs_data_set_string(settings, "server", rtmpAddr.c_str());
+	obs_data_set_string(settings, "key", rtmpCode.c_str());
+	obs_data_set_bool(settings, "use_auth", false);
+
+	obs_service_t *service = obs_service_create("rtmp_custom", "Bilibili Live", settings, nullptr);
+	obs_data_release(settings);
+
+	if (!service) {
+		obs_log(LOG_ERROR, "创建 OBS 自定义 RTMP 服务失败");
+		return false;
+	}
+
+	obs_frontend_set_streaming_service(service);
+	obs_frontend_save_streaming_service();
+	obs_service_release(service);
+	obs_log(LOG_INFO, "已将 Bilibili RTMP 信息写入 OBS 直播设置");
+	return true;
 }
 
 void BilibiliStreamPlugin::onOpenRoom()
@@ -144,7 +174,9 @@ void BilibiliStreamPlugin::onStreamToggle()
 			cfg.rtmp_addr = rtmpAddr;
 			cfg.rtmp_code = rtmpCode;
 			m_config.save();
-			UI::DialogFactory::streamStarted((QWidget *)obs_frontend_get_main_window(), rtmpAddr, rtmpCode);
+			const bool obsConfigured = configureObsStreamService(rtmpAddr, rtmpCode);
+			UI::DialogFactory::streamStarted((QWidget *)obs_frontend_get_main_window(), rtmpAddr, rtmpCode,
+							 obsConfigured);
 		} else {
 			if (!faceQr.empty()) {
 				UI::DialogFactory::faceAuth((QWidget *)obs_frontend_get_main_window(), faceQr);
@@ -160,21 +192,22 @@ void BilibiliStreamPlugin::onUpdateRoomInfo()
 	auto &cfg = m_config.config();
 	auto parent = (QWidget *)obs_frontend_get_main_window();
 
-	UI::DialogFactory::roomSettings(parent, cfg.room_id, cfg.title, cfg.area_id, cfg.part_id,
-					[this, &cfg](const std::string &title, int areaId, int partId) {
-						std::string message;
-						if (!title.empty() && Bili::BiliApi::updateRoomInfo(cfg, title, message)) {
-							cfg.title = title;
-							m_config.save();
-							UI::DialogFactory::message(QString::fromUtf8("直播间标题已更新"), "消息");
-						}
-						if (areaId != cfg.area_id || partId != cfg.part_id) {
-							cfg.part_id = partId;
-							cfg.area_id = areaId;
-							m_config.save();
-							UI::DialogFactory::message(QString::fromUtf8("直播间分区已更新"), "消息");
-						}
-					});
+	UI::DialogFactory::roomSettings(
+		parent, cfg.room_id, cfg.title, cfg.area_id, cfg.part_id,
+		[this, &cfg](const std::string &title, int areaId, int partId) {
+			std::string message;
+			if (!title.empty() && Bili::BiliApi::updateRoomInfo(cfg, title, message)) {
+				cfg.title = title;
+				m_config.save();
+				UI::DialogFactory::message(QString::fromUtf8("直播间标题已更新"), "消息");
+			}
+			if (areaId != cfg.area_id || partId != cfg.part_id) {
+				cfg.part_id = partId;
+				cfg.area_id = areaId;
+				m_config.save();
+				UI::DialogFactory::message(QString::fromUtf8("直播间分区已更新"), "消息");
+			}
+		});
 }
 
 static BilibiliStreamPlugin *plugin = nullptr;
